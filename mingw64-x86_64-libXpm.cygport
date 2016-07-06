@@ -1,0 +1,53 @@
+CROSS_HOST="x86_64-w64-mingw32"
+ORIG_PN="libXpm"
+inherit cross xorg
+
+NAME="mingw64-x86_64-libXpm"
+VERSION=3.5.11
+RELEASE=2
+CATEGORY="Devel"
+SUMMARY="X Pixmap library for Win64 toolchain"
+DESCRIPTION="This package does NOT contain cygwin binaries.  Instead, it
+contains msvcrt-linked binaries (aka 'mingw').  It is for use with the
+mingw64-x86_64-gcc cross compiler, and installs into the
+/usr/x86_64-w64-mingw32/sys-root/mingw/{lib,include} directories."
+
+PATCH_URI="
+	3.5.11-for-msw.patch
+	3.5.11-win64.patch
+"
+
+src_compile() {
+	cd ${B}
+	for c in $(find ${S}/src -name '*.c' ! -name '*P*.c' ! -name 'amigax.*')
+	do
+		echo "  MINGWCC    ${c##*/}"
+		${CC} ${CFLAGS} -I${S}/include/X11 -I${S}/src -c $c
+	done
+	echo "  MINGWAR    libXpm.a"
+	${AR} crs libXpm.a *.o
+	echo "  MINGWCCLD  libXpm-4.dll"
+	${CC} ${LDFLAGS} -shared -Wl,--out-implib,libXpm.dll.a -o libXpm-4.dll *.o -lgdi32
+
+	cat > xpm.pc <<_EOF
+prefix=${CROSS_PREFIX}
+exec_prefix=${CROSS_PREFIX}
+libdir=\${prefix}/lib
+includedir=\${prefix}/include
+
+Name: Xpm
+Description: X Pixmap Library
+Version: ${VERSION}
+Cflags: -I\${includedir}
+Libs: -L\${libdir} -lXpm
+_EOF
+}
+
+src_install() {
+	cd ${B}
+	dobin libXpm-4.dll
+	dolib libXpm.dll.a libXpm.a
+	dopkgconfig xpm.pc
+	includeinto X11
+	doinclude ${S}/include/X11/xpm.h ${S}/src/simx.h
+}

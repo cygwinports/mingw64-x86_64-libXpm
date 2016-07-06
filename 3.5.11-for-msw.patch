@@ -1,0 +1,31 @@
+--- origsrc/libXpm-3.5.11/include/X11/xpm.h	2013-09-07 23:40:20.000000000 -0500
++++ src/libXpm-3.5.11/include/X11/xpm.h	2016-07-06 04:05:44.124110200 -0500
+@@ -64,7 +64,8 @@
+ 
+ #ifndef XPM_NUMBERS
+ 
+-#ifdef FOR_MSW
++#ifdef _WIN32
++# define FOR_MSW
+ # define SYSV			/* uses memcpy string.h etc. */
+ # include <malloc.h>
+ # include "simx.h"		/* defines some X stuff using MSW types */
+--- origsrc/libXpm-3.5.11/src/simx.c	2013-09-07 23:40:20.000000000 -0500
++++ src/libXpm-3.5.11/src/simx.c	2016-07-06 04:14:28.321661500 -0500
+@@ -33,14 +33,14 @@
+ * Developed by HeDu 3/94 (hedu@cul-ipn.uni-kiel.de)                           *
+ \*****************************************************************************/
+ 
+-#ifdef FOR_MSW
+-
+ #ifdef HAVE_CONFIG_H
+ #include <config.h>
+ #endif
+ #include "xpm.h"
+ #include "xpmi.h"			/* for XpmMalloc */
+ 
++#ifdef FOR_MSW
++
+ /*
+  * On DOS size_t is only 2 bytes, thus malloc(size_t s) can only malloc
+  * 64K. BUT an expression data=malloc(width*height) may result in an
